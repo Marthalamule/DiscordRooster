@@ -1,0 +1,3 @@
+TICKET_PRICE = 1 # In ISK
+LOTTO_HIT = [10, 'Any', 'Of', 'Your', 'Own', 'Search', 'Strings']  # 10 is the type ID for 'Player Donation'
+CSV_NAME = 'your_file_name.csv'
