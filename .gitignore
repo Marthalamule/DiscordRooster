@@ -1,5 +1,6 @@
 .idea/
 data/*
 config/credentials.py
+config/lotto_settings.py
 *.py[co]
 *.egg-info

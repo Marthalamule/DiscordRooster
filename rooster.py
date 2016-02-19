@@ -1,11 +1,14 @@
 import asyncio
 import discord
 import requests
+import arrow
+import csv
 from discord.ext import commands
 
 from config.credentials import LOGIN_EMAIL, LOGIN_PASS
 import modules.fweight
 import modules.who
+import modules.lotto
 
 ALLIANCE = 99002172
 #ALLIANCE = 1354830081
@@ -39,6 +42,47 @@ async def on_ready():
     print(bot.user.id)
     print('------')
 
+async def lotto_draw():
+    await bot.wait_until_ready()
+    chans = {}
+    for i in bot.get_all_channels():
+        chans[i.name] = i.id
+    try:
+        channel = discord.Object(id=chans['alliance'])
+    except Exception:
+        print('That channel isn\'t on the server, background task not running.')
+        return
+    await asyncio.sleep(1)
+    if not bot.is_closed:
+        while True:
+            bot.keep_alive_handler(interval=5)
+            current_time = arrow.utcnow()
+            drawing_start = arrow.get('2016-02-15T00:00:00.00+00:00')
+            drawing_end = arrow.get('2018-02-12T00:00:00.00+00:00')
+            for r in arrow.Arrow.range('week', drawing_start, drawing_end):
+                if r > current_time:
+                      get_lotto_entries_from_wallet()
+                      pick_lotto_winner()
+            # r = requests.get('http://redisq.zkillboard.com/listen.php')
+            # stream = r.json()
+            # try:
+            #     for kill in stream:
+            #         if 'alliance' in stream[kill]['killmail']['victim']:
+            #             if stream[kill]['killmail']['victim']['alliance']['id'] == ALLIANCE:
+            #                 if stream[kill]['zkb']['totalValue'] >= VALUE:
+            #                     await bot.send_message(channel, "**KILL ALERT**\nhttps://zkillboard.com/kill/{}/".format(
+            #                                                     stream[kill]['killID']))
+            #                     break
+            #         for attacker in stream[kill]['killmail']['attackers']:
+            #             if 'alliance' in attacker:
+            #                 if attacker['alliance']['id'] == ALLIANCE:
+            #                     if stream[kill]['zkb']['totalValue'] >= VALUE:
+            #                         await bot.send_message(channel, "**KILL ALERT**\nhttps://zkillboard.com/kill/{}/".
+            #                                                         format(stream[kill]['killID']))
+            #                     break
+            # except TypeError:
+            #     continue
+            # await asyncio.sleep(5)
 
 async def killwatch():
     await bot.wait_until_ready()
@@ -48,7 +92,7 @@ async def killwatch():
     try:
         channel = discord.Object(id=chans['alliance'])
     except Exception:
-        print('that channel isnt on the server, background task not running')
+        print('That channel isn\'t on the server, background task not running.')
         return
     await asyncio.sleep(1)
     if not bot.is_closed:
