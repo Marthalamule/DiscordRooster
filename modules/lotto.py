@@ -13,13 +13,14 @@ from config.lotto_settings import LOTTO_HIT, TICKET_PRICE, CSV_NAME
 
 # Declaring local vars
 api = evelink.api.API(api_key=(CORP_KEYID, CORP_VCODE))
+player_api = evelink.eve.EVE()
 eve_corp = evelink.corp.Corp(api=api)
 wallet_journal = eve_corp.wallet_journal(limit=1000, before_id=None)
 corp_standings = eve_corp.contacts()
 output_file = open(CSV_NAME, 'a+', newline='')
 output_writer = csv.writer(output_file, dialect='excel')
 current_time = arrow.utcnow()
-last_week = arrow.utcnow().replace(weeks=-1)
+last_week = arrow.utcnow().replace(weeks=-2)
 
 
 def get_lotto_entries_from_wallet():
@@ -38,6 +39,10 @@ def get_lotto_entries_from_wallet():
                         output_writer.writerow(entrant_output)
     output_file.close()
 
+
+# get_lotto_entries_from_wallet()
+
+
 # def check_entrant_standing(player):
 #     standings_api = evelink.eve.EVE()
 #     character_id =  api.character_id_from_name(player)
@@ -48,22 +53,13 @@ def get_lotto_entries_from_wallet():
 #         name, corp, alliance, standing = player_sheet(character_id, standings_api)
 
 
-player = 'Impeh Man'
-api = evelink.eve.EVE()
-id = api.character_id_from_name(player)
-
-
-
 def player_sheet(id, api):
     info = api.character_info_from_id(id.result)
     name = info.result['name']
     corp = info.result['corp']['name']
     alliance = info.result['alliance']['name']
-    # print('{0} {1} {2}'.format(name, corp, alliance))
+    print('Name: {0}\nCorp: {1}\nAlliance: {2}\n'.format(name, corp, alliance))
     return name, corp, alliance
-
-
-player_sheet(id, api)
 
 
 def get_corp_standings():
@@ -74,11 +70,10 @@ def get_corp_standings():
         for y in corp_standings_dict[''][x]:
             for z in corp_standings_dict[''][x][y]:
                 if corp_standings_dict[''][x][y][z] in standing_hit:
-                    print(corp_standings_dict[''][x][y])
-
+                    # print(corp_standings_dict[''][x][y])
+                    return corp_standings_dict
 
 get_corp_standings()
-
 
 def pick_lotto_winner():
     with open(CSV_NAME, 'r') as output_reader:
@@ -91,13 +86,13 @@ def pick_lotto_winner():
             all_entries[str(formatted_entries[1])].append(int(formatted_entries[-1]))
         list(all_entries.items())
     for x in all_entries:
-        print('Entrant: {0}'.format(x))
+        # print('Entrant: {0}'.format(x))   #  DEBUG
         entrant_tickets = []
         for y in all_entries[x]:
             total_weekly_tickets += y
             entrant_tickets.append(y)
         total_entrant_tickets = sum(entrant_tickets)
-        print('Tickets purchased: {0}'.format(total_entrant_tickets))
+        # print('Tickets purchased: {0}'.format(total_entrant_tickets)) #  DEBUG
         ticket_numbers = []
         for rc in range(total_entrant_tickets):
             raffle_counter += 1
@@ -107,18 +102,33 @@ def pick_lotto_winner():
             ticket_numbers.append(num)
         entrant_numbers[x] = ticket_numbers
 
-    print('Total tickets purchased this week: {0}'.format(total_weekly_tickets))
-    print(entrant_numbers)
+    # print('Total tickets purchased this week: {0}'.format(total_weekly_tickets))  #  DEBUG
+    # print(entrant_numbers)    #  DEBUG
     winning_number = random.randrange(total_weekly_tickets)
     for winner in entrant_numbers:
         for raffle_ticket_numbers in entrant_numbers[winner]:
             if raffle_ticket_numbers == winning_number:
                 this_weeks_winner = winner
-                print('The winning number this week is: {0}\nThis Week\'s Winner: {1}'.format(winning_number, this_weeks_winner))
+                try:
+                    attempt_winner = player_sheet(player_api.character_id_from_name(this_weeks_winner), player_api)
+                    print('The winning number this week is: {0}\nThis Week\'s Winner: {1}\n'.format(
+                        winning_number, this_weeks_winner))   #  DEBUG
+                    print('{0}\n'.format(attempt_winner))
+                    if attempt_winner in corp_standings_dict:
+                        print('Valid Win')
+                    else:
+                        print('Not Valid Entry')
+                        pick_lotto_winner()
+                        continue
+                except evelink.api.APIError:
+                    print('Character({0}) does not exist - someone tampered with the csv\n'.format(this_weeks_winner))
+                    print('New Draw Commencing. . .\n')
+                    pick_lotto_winner()
+                    continue
 
 
-pick_lotto_winner()
-
+for x in range (10):
+    pick_lotto_winner()
 # TODO: Cross check blue status to confirm the entrant is valid
 # TODO: Function to organize the weekly lotto information for display
 # TODO: Tie into Rooster for automatic pings & !lotto command
