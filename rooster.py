@@ -57,11 +57,12 @@ async def lotto_draw():
         while True:
             bot.keep_alive_handler(interval=5)
             current_time = arrow.utcnow()
-            drawing_start = arrow.get('2016-02-15T00:00:00.00+00:00')
+            drawing_start = arrow.get('2016-02-22T00:00:00.00+00:00')
             drawing_end = arrow.get('2018-02-12T00:00:00.00+00:00')
             for r in arrow.Arrow.range('week', drawing_start, drawing_end):
-                if r > current_time:
+                if r == current_time:
                       get_lotto_entries_from_wallet()
+                      get_corp_standings()
                       pick_lotto_winner()
             # r = requests.get('http://redisq.zkillboard.com/listen.php')
             # stream = r.json()
