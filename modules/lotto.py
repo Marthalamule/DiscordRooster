@@ -46,7 +46,6 @@ def player_sheet(id, api):
     name = info.result['name']
     corp = info.result['corp']['name']
     alliance = info.result['alliance']['name']
-    print('Name: {0}\nCorp: {1}\nAlliance: {2}\n'.format(name, corp, alliance))
     return name, corp, alliance
 
 
@@ -59,13 +58,13 @@ def get_corp_standings():
                     if corp_standings_dict[''][x][y]['standing'] > 0.0:
                         corp_standings_final.append(corp_standings_dict[''][x][y]['name'])
                 except KeyError:
-                    # print('Out of blue entities - passing on labels and other id\'s\n') # Skips over keys with no info
                     continue
     return corp_standings_final
 
 
 def pick_lotto_winner():
     with open(CSV_NAME, 'r') as output_reader:
+        lotto_winners_name = ''
         all_entries = defaultdict(list)
         entrant_numbers = defaultdict(dict)
         total_weekly_tickets = 0
@@ -95,14 +94,15 @@ def pick_lotto_winner():
                 this_weeks_winner = winner
                 try:
                     attempt_winner = player_sheet(player_api.character_id_from_name(this_weeks_winner), player_api)
-                    print('The winning number this week is: {0}\nThis Week\'s Winner: {1}\n'.format(
-                        winning_number, this_weeks_winner))   #  DEBUG
                     if attempt_winner[0] in corp_standings_final:
-                        print('Valid Win\nCongrats!\n')
+                        lotto_winners_name = list(attempt_winner[0])
+                        return lotto_winners_name
                     elif attempt_winner[1] in corp_standings_final:
-                        print('Valid Win\nCongrats!\n')
+                        lotto_winners_name = list(attempt_winner[1])
+                        return lotto_winners_name
                     elif attempt_winner[2] in corp_standings_final:
-                        print('Valid Win\nCongrats!\n')
+                        lotto_winners_name = list(attempt_winner[2])
+                        return lotto_winners_name
                     else:
                         print('Invalid Entry\nNew Draw Commencing. . .\n')
                         pick_lotto_winner()
