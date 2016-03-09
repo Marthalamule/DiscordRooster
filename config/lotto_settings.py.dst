@@ -1,3 +1,4 @@
 TICKET_PRICE = 1 # In ISK
 LOTTO_HIT = [10, 'your', 'lotto', 'reasons', 'go', 'here']  # 10 is the type ID for 'Player Donation'
-CSV_NAME = 'YOUR_FILE_NAME.csv'
+STARTER_BLUES = ['Your Corp', 'Your Alliance', 'Your Friends']  # As appears on the API/EveWho/EveGate
+CSV_NAME = 'YOUR_FILE_NAME.csv' # For storing the week's entrants

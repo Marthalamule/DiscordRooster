@@ -7,7 +7,7 @@ import evelink.eve
 import random
 
 from config.credentials import CORP_KEYID, CORP_VCODE
-from config.lotto_settings import LOTTO_HIT, TICKET_PRICE, CSV_NAME
+from config.lotto_settings import LOTTO_HIT, TICKET_PRICE, CSV_NAME, STARTER_BLUES
 
 # Declaring local vars
 api = evelink.api.API(api_key=(CORP_KEYID, CORP_VCODE))
@@ -15,7 +15,8 @@ player_api = evelink.eve.EVE()
 eve_corp = evelink.corp.Corp(api=api)
 wallet_journal = eve_corp.wallet_journal(limit=1000, before_id=None)
 corp_standings = eve_corp.contacts()
-corp_standings_final = ['Fweddit', 'I Whip My Slaves Back and Forth']
+corp_standings_final = []
+corp_standings_final.append(STARTER_BLUES)  # Populates the initial Blue listing with your Corp/Alliance/Friends
 corp_standings_dict = defaultdict(dict)
 output_file = open(CSV_NAME, 'a+', newline='')
 output_writer = csv.writer(output_file, dialect='excel')
@@ -58,7 +59,7 @@ def get_corp_standings():
                     if corp_standings_dict[''][x][y]['standing'] > 0.0:
                         corp_standings_final.append(corp_standings_dict[''][x][y]['name'])
                 except KeyError:
-                    print('Out of blue entities - passing on labels and other id\'s\n')
+                    # print('Out of blue entities - passing on labels and other id\'s\n') # Skips over keys with no info
                     continue
     return corp_standings_final
 
@@ -112,7 +113,8 @@ def pick_lotto_winner():
                     pick_lotto_winner()
                     continue
 
-
+get_corp_standings()
+pick_lotto_winner()
 # TODO: Format return strings for Discord
 # TODO: Function to organize the weekly lotto information for display
 # TODO: Tie into Rooster for automatic pings & !lotto command
